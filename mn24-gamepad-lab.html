@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>MN24 AI Gamepad Lab</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #07111f;
+  --panel: #101d30;
+  --line: #263b53;
+  --green: #28f0a3;
+  --blue: #55baff;
+  --red: #ff647c;
+  --orange: #ffb347;
+  --muted: #9aacc3;
+  --panel-bg: #101d30ef;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(ellipse at top, #142d43, var(--bg) 65%);
+  color: #edf5ff;
+  font: 15px system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+header {
+  padding: 20px 16px 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+}
+header h1 {
+  margin: 0;
+  color: var(--green);
+  font-size: clamp(22px, 5vw, 36px);
+  letter-spacing: 0.5px;
+}
+header p { color: var(--muted); margin: 6px 0 2px; font-size: 14px; }
+header small { color: var(--muted); opacity: 0.8; }
+.lang-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+}
+.lang-toggle button {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: #17334a;
+  border: 1px solid #37546c;
+  color: white;
+  cursor: pointer;
+}
+.lang-toggle button.active {
+  background: var(--green);
+  color: #04130e;
+  border-color: var(--green);
+  font-weight: 700;
+}
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+h2 {
+  font-size: 17px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+button, select, input { font: inherit; }
+button {
+  background: #17334a;
+  color: white;
+  border: 1px solid #37546c;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+button:hover:not(:disabled) { background: #1e4060; }
+button:active:not(:disabled) { transform: scale(0.97); }
+button.primary {
+  background: var(--green);
+  color: #04130e;
+  border-color: var(--green);
+  font-weight: 750;
+}
+button.primary:hover:not(:disabled) { background: #3af7b5; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+select, input[type="text"], input[type="number"] {
+  background: #07111f;
+  color: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 12px;
+  max-width: 100%;
+}
+input[type="range"] {
+  accent-color: var(--green);
+  width: 140px;
+}
+.status {
+  color: var(--muted);
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.status.ok { color: var(--green); }
+.status.warn { color: var(--orange); }
+.status.err { color: var(--red); }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+.stat {
+  background: #091727;
+  border: 1px solid var(--line);
+  padding: 12px;
+  border-radius: 12px;
+}
+.label { font-size: 11px; color: var(--muted); letter-spacing: 0.3px; }
+.value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+.value.small { font-size: 15px; }
+.stick-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  margin: 12px auto;
+}
+.stick {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #46617b;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #1b3046 0%, #091523 70%);
+  position: relative;
+  overflow: hidden;
+}
+.stick canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.stick .cross-h, .stick .cross-v {
+  position: absolute;
+  background: #344a61;
+  pointer-events: none;
+}
+.stick .cross-h { height: 1px; width: 100%; top: 50%; left: 0; }
+.stick .cross-v { width: 1px; height: 100%; left: 50%; top: 0; }
+.stick .ring {
+  position: absolute;
+  border: 1px dashed #3a556e;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.stick .ring.dz {
+  border-color: var(--orange);
+  border-style: solid;
+  opacity: 0.6;
+}
+.dot {
+  position: absolute;
+  z-index: 5;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid white;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  box-shadow: 0 0 14px #28f0a388;
+  transition: left 0.03s, top 0.03s;
+  pointer-events: none;
+}
+.dot.moving { background: var(--blue); box-shadow: 0 0 14px #55baff88; }
+.axes {
+  display: flex;
+  justify-content: space-around;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.mag {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+}
+.key {
+  border: 1px solid #34485d;
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  transition: all 0.08s;
+  position: relative;
+}
+.key .count {
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 10px;
+  color: var(--blue);
+  opacity: 0.8;
+}
+.key.on {
+  background: #0d4838;
+  border-color: var(--green);
+  color: white;
+  box-shadow: inset 0 0 12px #28f0a322;
+}
+.key.trigger .bar {
+  height: 4px;
+  background: #26384b;
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.key.trigger .fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--blue), var(--green));
+  transition: width 0.05s;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: #c9ddf2;
+  background: #081422;
+  padding: 12px;
+  border-radius: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+}
+small, .muted { color: var(--muted); }
+footer {
+  text-align: center;
+  padding: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.chart-wrap {
+  position: relative;
+  background: #081422;
+  border-radius: 10px;
+  overflow: hidden;
+}
+canvas#chart {
+  width: 100%;
+  height: 120px;
+  display: block;
+}
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  justify-content: center;
+}
+.legend span::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.legend .lx::before { background: #55baff; }
+.legend .ly::before { background: #28f0a3; }
+.legend .rx::before { background: #ffb347; }
+.legend .ry::before { background: #ff647c; }
+.advice-box {
+  background: #091727;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.advice-box.ok { border-color: #1a5c45; }
+.advice-box.warn { border-color: #6b4a1a; }
+.advice-box.err { border-color: #6b2a36; }
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+.badge.ok { background: #0d4838; color: var(--green); }
+.badge.warn { background: #4a3510; color: var(--orange); }
+.badge.err { background: #4a1a24; color: var(--red); }
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #0d1a2a;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tab.active {
+  background: #17334a;
+  color: white;
+  border-color: #456a8a;
+}
+.hidden { display: none !important; }
+@media (max-width: 600px) {
+  .stick-wrap { width: 160px; height: 160px; }
+  .lang-toggle { position: static; justify-content: center; margin-bottom: 8px; }
+  header { padding-top: 12px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="lang-toggle">
+    <button id="langES" class="active">ES</button>
+    <button id="langEN">EN</button>
+  </div>
+  <h1>MN24 AI GAMEPAD LAB</h1>
+  <p data-i18n="tagline">IDEA → TEST → ANALYZE → IMPROVE</p>
+  <small data-i18n="subtitle">Controladores · Joysticks · Diagnóstico inteligente</small>
+</header>
+
+<main>
+  <!-- 01 Connection -->
+  <section class="panel">
+    <h2>01 · <span data-i18n="sec_conn">Conexión del mando</span></h2>
+    <div class="row">
+      <button class="primary" id="scan" data-i18n="btn_scan">Buscar / actualizar</button>
+      <select id="pads" aria-label="Seleccionar mando">
+        <option value="-1" data-i18n="opt_waiting">Esperando un mando…</option>
+      </select>
+      <button id="reset" data-i18n="btn_reset">Reiniciar medición</button>
+    </div>
+    <div id="status" class="status" data-i18n="status_init">Conecta el mando por USB o Bluetooth, pulsa un botón físico y vuelve a esta pestaña.</div>
+    <div class="grid" style="margin-top:14px">
+      <div class="stat">
+        <div class="label" data-i18n="lbl_device">DISPOSITIVO</div>
+        <div id="device" class="value small">—</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_counts">BOTONES / EJES</div>
+        <div id="counts" class="value">—</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_time">TIEMPO DE PRUEBA</div>
+        <div id="elapsed" class="value">0 s</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_mapping">MAPPING</div>
+        <div id="mapping" class="value small">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 & 03 Sticks -->
+  <section class="grid">
+    <div class="panel">
+      <h2>02 · <span data-i18n="sec_stickL">Joystick izquierdo</span></h2>
+      <div class="stick-wrap">
+        <div class="stick" id="stickL">
+          <canvas id="trailL" width="200" height="200"></canvas>
+          <div class="cross-h"></div>
+          <div class="cross-v"></div>
+          <div class="ring dz" id="dzRingL"></div>
+          <div class="ring" style="width:70%;height:70%;left:15%;top:15%"></div>
+          <div class="ring" style="width:40%;height:40%;left:30%;top:30%"></div>
+          <div class="dot" id="dotL"></div>
+        </div>
+      </div>
+      <div class="axes">
+        <span id="lx">X: 0.000</span>
+        <span id="ly">Y: 0.000</span>
+      </div>
+      <div class="mag" id="magL">|v| 0.000</div>
+    </div>
+    <div class="panel">
+      <h2>03 · <span data-i18n="sec_stickR">Joystick derecho</span></h2>
+      <div class="stick-wrap">
+        <div class="stick" id="stickR">
+          <canvas id="trailR" width="200" height="200"></canvas>
+          <div class="cross-h"></div>
+          <div class="cross-v"></div>
+          <div class="ring dz" id="dzRingR"></div>
+          <div class="ring" style="width:70%;height:70%;left:15%;top:15%"></div>
+          <div class="ring" style="width:40%;height:40%;left:30%;top:30%"></div>
+          <div class="dot" id="dotR"></div>
+        </div>
+      </div>
+      <div class="axes">
+        <span id="rx">X: 0.000</span>
+        <span id="ry">Y: 0.000</span>
+      </div>
+      <div class="mag" id="magR">|v| 0.000</div>
+    </div>
+  </section>
+
+  <!-- 04 Buttons -->
+  <section class="panel">
+    <h2>04 · <span data-i18n="sec_buttons">Botones, gatillos y cruceta</span></h2>
+    <div id="buttons" class="buttons-grid"></div>
+    <p class="muted" style="margin:10px 0 0" data-i18n="btn_note">Los índices dependen del mando y de la asignación que exponga el navegador.</p>
+  </section>
+
+  <!-- 05 Diagnosis -->
+  <section class="panel">
+    <h2>05 · <span data-i18n="sec_diag">X IA — Diagnóstico local</span></h2>
+    <div class="grid">
+      <div class="stat">
+        <div class="label" data-i18n="lbl_drift">DESVIACIÓN MÁX. REPOSO</div>
+        <div id="drift" class="value">—</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_avgDrift">MEDIA REPOSO</div>
+        <div id="avgDrift" class="value">—</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_range">RANGO OBSERVADO</div>
+        <div id="range" class="value">—</div>
+      </div>
+      <div class="stat">
+        <div class="label" data-i18n="lbl_grade">ESTADO</div>
+        <div id="grade" class="value">—</div>
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <label for="deadzone" data-i18n="lbl_dz">Zona muerta de referencia:</label>
+      <strong id="dzLabel">0.08</strong>
+      <input id="deadzone" type="range" min="0" max="0.30" step="0.01" value="0.08">
+      <button id="clearTrail" style="margin-left:auto" data-i18n="btn_clearTrail">Limpiar rastro</button>
+    </div>
+
+    <div id="adviceBox" class="advice-box">
+      <div id="advice" data-i18n="advice_init">Conecta el mando y deja los sticks quietos durante unos segundos para medir la desviación.</div>
+    </div>
+    <p class="muted" style="margin:10px 0 0;font-size:12px" data-i18n="diag_note">
+      La zona muerta es un parámetro de comparación, no una calibración escrita en el hardware.
+      El navegador no puede certificar una avería física.
+    </p>
+  </section>
+
+  <!-- 06 History -->
+  <section class="panel">
+    <h2>06 · <span data-i18n="sec_history">Historial de movimiento</span></h2>
+    <div class="chart-wrap">
+      <canvas id="chart" width="1000" height="120" aria-label="Gráfico de ejes"></canvas>
+    </div>
+    <div class="legend">
+      <span class="lx">L-X</span>
+      <span class="ly">L-Y</span>
+      <span class="rx">R-X</span>
+      <span class="ry">R-Y</span>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button id="export" data-i18n="btn_export">Exportar informe JSON</button>
+      <button id="copy" data-i18n="btn_copy">Copiar diagnóstico</button>
+      <button id="rumble" data-i18n="btn_rumble">Probar vibración</button>
+      <label style="margin-left:8px;font-size:13px" data-i18n="lbl_rumbleStr">Fuerza:</label>
+      <input id="rumbleStr" type="range" min="0.1" max="1" step="0.1" value="0.6" style="width:90px">
+    </div>
+    <p id="actionStatus" class="status" data-i18n="action_local">Los datos se procesan localmente en esta página.</p>
+  </section>
+
+  <!-- 07 Technical -->
+  <section class="panel">
+    <h2>07 · <span data-i18n="sec_raw">Datos técnicos</span></h2>
+    <div class="tabs">
+      <div class="tab active" data-tab="raw" data-i18n="tab_raw">JSON en vivo</div>
+      <div class="tab" data-tab="stats" data-i18n="tab_stats">Estadísticas</div>
+      <div class="tab" data-tab="events" data-i18n="tab_events">Eventos</div>
+    </div>
+    <pre id="raw">Esperando datos del mando…</pre>
+    <pre id="statsView" class="hidden"></pre>
+    <pre id="eventsView" class="hidden"></pre>
+  </section>
+</main>
+
+<footer>MN24 Labs · AI Gamepad Lab · v2.0 · <span data-i18n="footer">Prototipo web local</span></footer>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+const i18n = {
+  es: {
+    tagline: "IDEA → TEST → ANALYZE → IMPROVE",
+    subtitle: "Controladores · Joysticks · Diagnóstico inteligente",
+    sec_conn: "Conexión del mando",
+    btn_scan: "Buscar / actualizar",
+    opt_waiting: "Esperando un mando…",
+    btn_reset: "Reiniciar medición",
+    status_init: "Conecta el mando por USB o Bluetooth, pulsa un botón físico y vuelve a esta pestaña.",
+    status_none: "No detectado. Pulsa un botón físico y vuelve a buscar.",
+    status_noapi: "Este navegador no ofrece la Gamepad API.",
+    status_ok: "Mando detectado. Mueve los sticks y pulsa cada botón.",
+    lbl_device: "DISPOSITIVO",
+    lbl_counts: "BOTONES / EJES",
+    lbl_time: "TIEMPO DE PRUEBA",
+    lbl_mapping: "MAPPING",
+    sec_stickL: "Joystick izquierdo",
+    sec_stickR: "Joystick derecho",
+    sec_buttons: "Botones, gatillos y cruceta",
+    btn_note: "Los índices dependen del mando y de la asignación que exponga el navegador.",
+    sec_diag: "X IA — Diagnóstico local",
+    lbl_drift: "DESVIACIÓN MÁX. REPOSO",
+    lbl_avgDrift: "MEDIA REPOSO",
+    lbl_range: "RANGO OBSERVADO",
+    lbl_grade: "ESTADO",
+    lbl_dz: "Zona muerta de referencia:",
+    btn_clearTrail: "Limpiar rastro",
+    advice_init: "Conecta el mando y deja los sticks quietos durante unos segundos para medir la desviación.",
+    advice_rest: "Fase 1: deja el mando completamente inmóvil (~4 s). Después mueve cada stick hasta sus extremos en todas las direcciones.",
+    advice_ok: "La desviación observada está dentro del umbral. Completa el recorrido de rango en todas las direcciones para verificar circularidad.",
+    advice_warn: "Se observó una desviación inicial superior a la zona muerta. Repite sin tocar el mando. Compara USB vs Bluetooth y prueba otro puerto.",
+    advice_measuring: "Midiendo reposo… no toques los sticks.",
+    diag_note: "La zona muerta es un parámetro de comparación, no una calibración escrita en el hardware. El navegador no puede certificar una avería física.",
+    sec_history: "Historial de movimiento",
+    btn_export: "Exportar informe JSON",
+    btn_copy: "Copiar diagnóstico",
+    btn_rumble: "Probar vibración",
+    lbl_rumbleStr: "Fuerza:",
+    action_local: "Los datos se procesan localmente en esta página.",
+    action_export: "Informe JSON generado.",
+    action_copy: "Diagnóstico copiado al portapapeles.",
+    action_copy_fail: "No se pudo copiar. Copia manualmente el texto del diagnóstico.",
+    action_rumble_ok: "Solicitud de vibración enviada.",
+    action_rumble_fail: "Vibración no disponible en este mando/navegador.",
+    action_reset: "Medición reiniciada.",
+    sec_raw: "Datos técnicos",
+    tab_raw: "JSON en vivo",
+    tab_stats: "Estadísticas",
+    tab_events: "Eventos",
+    footer: "Prototipo web local",
+    grade_measuring: "Midiendo",
+    grade_ok: "Dentro del umbral",
+    grade_warn: "Revisar",
+    grade_nodata: "Sin datos",
+    names: ["A / inferior","B / derecha","X / izquierda","Y / superior","LB","RB","LT","RT","Select / View","Start / Menu","Stick L","Stick R","D-pad ↑","D-pad ↓","D-pad ←","D-pad →","Home","Extra 1","Extra 2","Extra 3"]
+  },
+  en: {
+    tagline: "IDEA → TEST → ANALYZE → IMPROVE",
+    subtitle: "Controllers · Joysticks · Smart diagnostics",
+    sec_conn: "Controller connection",
+    btn_scan: "Scan / refresh",
+    opt_waiting: "Waiting for a controller…",
+    btn_reset: "Reset measurement",
+    status_init: "Connect the controller via USB or Bluetooth, press any physical button, then return to this tab.",
+    status_none: "Not detected. Press a physical button and scan again.",
+    status_noapi: "This browser does not expose the Gamepad API.",
+    status_ok: "Controller detected. Move the sticks and press every button.",
+    lbl_device: "DEVICE",
+    lbl_counts: "BUTTONS / AXES",
+    lbl_time: "TEST TIME",
+    lbl_mapping: "MAPPING",
+    sec_stickL: "Left stick",
+    sec_stickR: "Right stick",
+    sec_buttons: "Buttons, triggers & D-pad",
+    btn_note: "Indexes depend on the controller and the mapping exposed by the browser.",
+    sec_diag: "X AI — Local diagnosis",
+    lbl_drift: "MAX REST DEVIATION",
+    lbl_avgDrift: "AVG REST",
+    lbl_range: "OBSERVED RANGE",
+    lbl_grade: "STATUS",
+    lbl_dz: "Reference deadzone:",
+    btn_clearTrail: "Clear trail",
+    advice_init: "Connect the controller and leave the sticks still for a few seconds to measure deviation.",
+    advice_rest: "Phase 1: leave the controller completely still (~4 s). Then move each stick to its extremes in all directions.",
+    advice_ok: "Observed deviation is within the threshold. Complete full-range movement in all directions to check circularity.",
+    advice_warn: "Initial deviation exceeded the deadzone. Repeat without touching the sticks. Compare USB vs Bluetooth and try another port.",
+    advice_measuring: "Measuring rest… do not touch the sticks.",
+    diag_note: "The deadzone is a comparison parameter, not a hardware calibration written to the device. The browser cannot certify a physical fault.",
+    sec_history: "Motion history",
+    btn_export: "Export JSON report",
+    btn_copy: "Copy diagnosis",
+    btn_rumble: "Test vibration",
+    lbl_rumbleStr: "Strength:",
+    action_local: "All data is processed locally in this page.",
+    action_export: "JSON report generated.",
+    action_copy: "Diagnosis copied to clipboard.",
+    action_copy_fail: "Could not copy. Please copy the diagnosis text manually.",
+    action_rumble_ok: "Vibration request sent.",
+    action_rumble_fail: "Vibration not available on this controller/browser.",
+    action_reset: "Measurement reset.",
+    sec_raw: "Technical data",
+    tab_raw: "Live JSON",
+    tab_stats: "Statistics",
+    tab_events: "Events",
+    footer: "Local web prototype",
+    grade_measuring: "Measuring",
+    grade_ok: "Within threshold",
+    grade_warn: "Needs review",
+    grade_nodata: "No data",
+    names: ["A / Cross","B / Circle","X / Square","Y / Triangle","LB","RB","LT","RT","Select / View","Start / Menu","L3","R3","D-pad ↑","D-pad ↓","D-pad ←","D-pad →","Home","Extra 1","Extra 2","Extra 3"]
+  }
+};
+
+let lang = "es";
+function t(key) { return i18n[lang][key] || key; }
+
+function applyLang() {
+  $$("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (i18n[lang][key] !== undefined) el.textContent = i18n[lang][key];
+  });
+  document.documentElement.lang = lang;
+  $("langES").classList.toggle("active", lang === "es");
+  $("langEN").classList.toggle("active", lang === "en");
+  // Update waiting option if present
+  const opt = $("pads").querySelector('option[value="-1"]');
+  if (opt) opt.textContent = t("opt_waiting");
+}
+
+const state = {
+  index: -1,
+  started: 0,
+  samples: 0,
+  restSamples: [],
+  extrema: [0,0,0,0],
+  history: { lx: [], ly: [], rx: [], ry: [] },
+  events: [],
+  last: null,
+  pressCount: {},
+  prevButtons: [],
+  trail: { L: [], R: [] },
+  restPhaseDone: false
+};
+
+const apiAvailable = "getGamepads" in navigator;
+const MAX_HISTORY = 240;
+const REST_SAMPLES = 240; // ~4 s at 60 fps
+const TRAIL_LEN = 80;
+
+function dz() { return Number($("deadzone").value); }
+
+function allPads() {
+  if (!apiAvailable) return [];
+  return Array.from(navigator.getGamepads() || []).filter(Boolean);
+}
+
+function selectedPad() {
+  const pads = allPads();
+  let p = pads.find(x => x.index === state.index && x.connected);
+  if (!p && pads.length) {
+    p = pads[0];
+    state.index = p.index;
+    $("pads").value = String(p.index);
+  }
+  return p;
+}
+
+function scan() {
+  const pads = allPads();
+  const select = $("pads");
+  const old = select.value;
+  select.innerHTML = "";
+
+  if (!pads.length) {
+    const o = document.createElement("option");
+    o.value = "-1";
+    o.textContent = t("opt_waiting");
+    select.append(o);
+    state.index = -1;
+    $("device").textContent = "—";
+    $("counts").textContent = "—";
+    $("mapping").textContent = "—";
+    $("status").textContent = apiAvailable ? t("status_none") : t("status_noapi");
+    $("status").className = "status";
+    $("buttons").replaceChildren();
+    $("raw").textContent = "—";
+    return;
+  }
+
+  pads.forEach(p => {
+    const o = document.createElement("option");
+    o.value = String(p.index);
+    o.textContent = `Pad ${p.index + 1}: ${p.id}`;
+    select.append(o);
+  });
+  select.value = pads.some(p => String(p.index) === old) ? old : String(pads[0].index);
+  state.index = Number(select.value);
+  $("status").textContent = t("status_ok");
+  $("status").className = "status ok";
+}
+
+function reset() {
+  state.started = performance.now();
+  state.samples = 0;
+  state.restSamples = [];
+  state.extrema = [0,0,0,0];
+  state.history = { lx: [], ly: [], rx: [], ry: [] };
+  state.pressCount = {};
+  state.prevButtons = [];
+  state.trail = { L: [], R: [] };
+  state.restPhaseDone = false;
+  state.last = null;
+  clearTrails();
+  $("advice").textContent = t("advice_rest");
+  $("adviceBox").className = "advice-box";
+  $("actionStatus").textContent = t("action_reset");
+  $("drift").textContent = "—";
+  $("avgDrift").textContent = "—";
+  $("range").textContent = "—";
+  $("grade").textContent = t("grade_measuring");
+}
+
+function num(v) { return Number(v || 0).toFixed(3); }
+
+function updateDzRings() {
+  const r = dz() * 100;
+  ["dzRingL", "dzRingR"].forEach(id => {
+    const el = $(id);
+    el.style.width = (r * 2) + "%";
+    el.style.height = (r * 2) + "%";
+    el.style.left = (50 - r) + "%";
+    el.style.top = (50 - r) + "%";
+  });
+}
+
+function clearTrails() {
+  ["trailL", "trailR"].forEach(id => {
+    const c = $(id);
+    const ctx = c.getContext("2d");
+    ctx.clearRect(0, 0, c.width, c.height);
+  });
+  state.trail = { L: [], R: [] };
+}
+
+function drawTrail(canvasId, points, color) {
+  const c = $(canvasId);
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, c.width, c.height);
+  if (points.length < 2) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = (0.5 + p.x * 0.45) * c.width;
+    const y = (0.5 + p.y * 0.45) * c.height;
+    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+  });
+  ctx.stroke();
+  // fade tail
+  ctx.globalAlpha = 0.25;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function renderStick(side, x, y) {
+  const dot = $("dot" + side);
+  const mag = Math.sqrt(x * x + y * y);
+  const clampedX = Math.max(-1, Math.min(1, x));
+  const clampedY = Math.max(-1, Math.min(1, y));
+  dot.style.left = (50 + clampedX * 45) + "%";
+  dot.style.top = (50 + clampedY * 45) + "%";
+  dot.classList.toggle("moving", mag > 0.02);
+
+  $(side === "L" ? "lx" : "rx").textContent = "X: " + num(x);
+  $(side === "L" ? "ly" : "ry").textContent = "Y: " + num(y);
+  $("mag" + side).textContent = "|v| " + num(mag);
+
+  // trail
+  const key = side;
+  state.trail[key].push({ x: clampedX, y: clampedY });
+  if (state.trail[key].length > TRAIL_LEN) state.trail[key].shift();
+  drawTrail("trail" + side, state.trail[key], side === "L" ? "#28f0a3" : "#55baff");
+}
+
+function renderButtons(p) {
+  const root = $("buttons");
+  const names = t("names");
+
+  while (root.children.length < p.buttons.length) {
+    const d = document.createElement("div");
+    d.className = "key";
+    root.append(d);
+  }
+  while (root.children.length > p.buttons.length) root.lastChild.remove();
+
+  p.buttons.forEach((b, i) => {
+    const el = root.children[i];
+    const isTrigger = i === 6 || i === 7;
+    el.className = "key" + (isTrigger ? " trigger" : "") + (b.pressed || b.value > 0.5 ? " on" : "");
+
+    if (!state.pressCount[i]) state.pressCount[i] = 0;
+    const wasPressed = state.prevButtons[i];
+    if ((b.pressed || b.value > 0.5) && !wasPressed) state.pressCount[i]++;
+
+    const label = (names[i] || ("Btn " + i));
+    el.innerHTML = `${label}<br><span style="opacity:.7">${num(b.value)}</span>` +
+      (state.pressCount[i] ? `<span class="count">${state.pressCount[i]}</span>` : "");
+
+    if (isTrigger) {
+      const bar = document.createElement("div");
+      bar.className = "bar";
+      const fill = document.createElement("div");
+      fill.className = "fill";
+      fill.style.width = (Math.min(1, b.value) * 100) + "%";
+      bar.append(fill);
+      el.append(bar);
+    }
+    el.title = "Index: " + i;
+  });
+
+  state.prevButtons = p.buttons.map(b => b.pressed || b.value > 0.5);
+}
+
+function drawChart() {
+  const c = $("chart");
+  const ctx = c.getContext("2d");
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // center line
+  ctx.strokeStyle = "#1e2f42";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  const series = [
+    { data: state.history.lx, color: "#55baff" },
+    { data: state.history.ly, color: "#28f0a3" },
+    { data: state.history.rx, color: "#ffb347" },
+    { data: state.history.ry, color: "#ff647c" }
+  ];
+
+  series.forEach(s => {
+    if (s.data.length < 2) return;
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    s.data.forEach((v, i) => {
+      const x = (i / (MAX_HISTORY - 1)) * w;
+      const y = (1 - (v + 1) / 2) * h; // map -1..1 to h..0
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.stroke();
+  });
+}
+
+function diagnose(p) {
+  const a = p.axes || [];
+  const axes4 = [a[0]||0, a[1]||0, a[2]||0, a[3]||0];
+  const mags = [
+    Math.hypot(axes4[0], axes4[1]),
+    Math.hypot(axes4[2], axes4[3])
+  ];
+  const maxMag = Math.max(...mags, 0);
+
+  // extrema
+  axes4.forEach((v, i) => {
+    state.extrema[i] = Math.max(state.extrema[i] || 0, Math.abs(v));
+  });
+
+  // rest phase
+  if (!state.restPhaseDone) {
+    state.restSamples.push(maxMag);
+    if (state.restSamples.length >= REST_SAMPLES) {
+      state.restPhaseDone = true;
+    }
+  }
+
+  const restMax = state.restSamples.length ? Math.max(...state.restSamples) : null;
+  const restAvg = state.restSamples.length
+    ? state.restSamples.reduce((s, v) => s + v, 0) / state.restSamples.length
+    : null;
+  const maxRange = Math.max(...state.extrema, 0);
+
+  $("drift").textContent = restMax === null ? "—" : num(restMax);
+  $("avgDrift").textContent = restAvg === null ? "—" : num(restAvg);
+  $("range").textContent = num(maxRange);
+
+  let grade = t("grade_measuring");
+  let adviceKey = "advice_measuring";
+  let boxClass = "advice-box";
+
+  if (state.restPhaseDone) {
+    if (restMax > dz()) {
+      grade = t("grade_warn");
+      adviceKey = "advice_warn";
+      boxClass = "advice-box warn";
+    } else {
+      grade = t("grade_ok");
+      adviceKey = "advice_ok";
+      boxClass = "advice-box ok";
+    }
+  } else if (state.samples > 10) {
+    adviceKey = "advice_measuring";
+  }
+
+  $("grade").textContent = grade;
+  $("advice").textContent = t(adviceKey);
+  $("adviceBox").className = boxClass;
+}
+
+function updateStatsView() {
+  const restMax = state.restSamples.length ? Math.max(...state.restSamples) : 0;
+  const restAvg = state.restSamples.length
+    ? state.restSamples.reduce((s, v) => s + v, 0) / state.restSamples.length
+    : 0;
+  const txt = [
+    `Samples: ${state.samples}`,
+    `Rest samples: ${state.restSamples.length}/${REST_SAMPLES}`,
+    `Rest max: ${num(restMax)}`,
+    `Rest avg: ${num(restAvg)}`,
+    `Extrema: [${state.extrema.map(num).join(", ")}]`,
+    `Press counts: ${JSON.stringify(state.pressCount)}`,
+    `Events: ${state.events.length}`
+  ].join("\n");
+  $("statsView").textContent = txt;
+}
+
+function updateEventsView() {
+  $("eventsView").textContent = state.events.length
+    ? state.events.map(e => `${e.time}  ${e.event}  ${e.id || ""}`).join("\n")
+    : "—";
+}
+
+function frame() {
+  const p = selectedPad();
+  if (p) {
+    if (!state.started) state.started = performance.now();
+    const a = p.axes || [];
+
+    renderStick("L", a[0] || 0, a[1] || 0);
+    renderStick("R", a[2] || 0, a[3] || 0);
+    renderButtons(p);
+
+    $("device").textContent = p.id || "Unknown";
+    $("counts").textContent = `${p.buttons.length} btn · ${a.length} ax`;
+    $("mapping").textContent = p.mapping || "—";
+    $("elapsed").textContent = Math.floor((performance.now() - state.started) / 1000) + " s";
+
+    // history
+    state.history.lx.push(a[0] || 0);
+    state.history.ly.push(a[1] || 0);
+    state.history.rx.push(a[2] || 0);
+    state.history.ry.push(a[3] || 0);
+    Object.keys(state.history).forEach(k => {
+      if (state.history[k].length > MAX_HISTORY) state.history[k].shift();
+    });
+
+    state.samples++;
+    diagnose(p);
+    drawChart();
+
+    $("raw").textContent = JSON.stringify({
+      index: p.index,
+      id: p.id,
+      mapping: p.mapping,
+      connected: p.connected,
+      timestamp: p.timestamp,
+      buttons: p.buttons.map((b, i) => ({
+        index: i,
+        pressed: b.pressed,
+        value: +b.value.toFixed(4)
+      })),
+      axes: a.map(v => +Number(v).toFixed(4))
+    }, null, 2);
+
+    state.last = {
+      id: p.id,
+      index: p.index,
+      mapping: p.mapping,
+      buttons: p.buttons.map(b => ({ pressed: b.pressed, value: +b.value.toFixed(4) })),
+      axes: a.map(v => +Number(v).toFixed(4))
+    };
+
+    if ($("statsView") && !$("statsView").classList.contains("hidden")) updateStatsView();
+  }
+  requestAnimationFrame(frame);
+}
+
+// Events
+window.addEventListener("gamepadconnected", e => {
+  state.index = e.gamepad.index;
+  scan();
+  state.events.push({ time: new Date().toISOString(), event: "connected", id: e.gamepad.id });
+});
+window.addEventListener("gamepaddisconnected", e => {
+  state.events.push({ time: new Date().toISOString(), event: "disconnected", id: e.gamepad.id });
+  scan();
+});
+
+$("scan").onclick = scan;
+$("reset").onclick = reset;
+$("pads").onchange = () => {
+  state.index = Number($("pads").value);
+  reset();
+};
+$("deadzone").oninput = () => {
+  $("dzLabel").textContent = Number(dz()).toFixed(2);
+  updateDzRings();
+};
+$("clearTrail").onclick = clearTrails;
+
+$("export").onclick = () => {
+  const report = {
+    product: "MN24 AI Gamepad Lab v2",
+    createdAt: new Date().toISOString(),
+    language: lang,
+    measurementSamples: state.samples,
+    referenceDeadzone: dz(),
+    restMax: state.restSamples.length ? Math.max(...state.restSamples) : null,
+    restAvg: state.restSamples.length
+      ? state.restSamples.reduce((s, v) => s + v, 0) / state.restSamples.length
+      : null,
+    extrema: state.extrema,
+    pressCounts: state.pressCount,
+    lastReading: state.last,
+    events: state.events,
+    warning: "Browser readings are not proof of physical hardware failure."
+  };
+  const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "mn24-gamepad-report.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  $("actionStatus").textContent = t("action_export");
+};
+
+$("copy").onclick = async () => {
+  const msg = [
+    $("advice").textContent,
+    `Max rest: ${$("drift").textContent}`,
+    `Avg rest: ${$("avgDrift").textContent}`,
+    `Range: ${$("range").textContent}`,
+    `Status: ${$("grade").textContent}`
+  ].join("\n");
+  try {
+    await navigator.clipboard.writeText(msg);
+    $("actionStatus").textContent = t("action_copy");
+  } catch {
+    $("actionStatus").textContent = t("action_copy_fail");
+  }
+};
+
+$("rumble").onclick = async () => {
+  const p = selectedPad();
+  const str = Number($("rumbleStr").value);
+  try {
+    if (!p) throw new Error("No controller");
+    if (!p.vibrationActuator || !p.vibrationActuator.playEffect)
+      throw new Error("no vib");
+    await p.vibrationActuator.playEffect("dual-rumble", {
+      startDelay: 0,
+      duration: 220,
+      weakMagnitude: str * 0.6,
+      strongMagnitude: str
+    });
+    $("actionStatus").textContent = t("action_rumble_ok");
+  } catch {
+    $("actionStatus").textContent = t("action_rumble_fail");
+  }
+};
+
+// Tabs
+$$(".tab").forEach(tab => {
+  tab.onclick = () => {
+    $$(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const name = tab.dataset.tab;
+    $("raw").classList.toggle("hidden", name !== "raw");
+    $("statsView").classList.toggle("hidden", name !== "stats");
+    $("eventsView").classList.toggle("hidden", name !== "events");
+    if (name === "stats") updateStatsView();
+    if (name === "events") updateEventsView();
+  };
+});
+
+// Language
+$("langES").onclick = () => { lang = "es"; applyLang(); };
+$("langEN").onclick = () => { lang = "en"; applyLang(); };
+
+// Init
+applyLang();
+updateDzRings();
+scan();
+reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

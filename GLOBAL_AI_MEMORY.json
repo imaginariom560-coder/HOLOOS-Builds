@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "title": "MN24 GLOBAL AI MEMORY",
+    "version": "1.3.0-infinite",
+    "generated_at": "2026-10-13T02:05:00Z",
+    "generator": "Grok (xAI) — MN24 Memory Restore Protocol",
+    "status": "PARTIAL — Maximum depth on TAXI24 GLOBAL and MN24 Metaverse. Other projects still pending historical imports.",
+    "rules_applied": ["No invention", "Preserve names", "Distinguish confirmed/proposed/pending", "Record provenance", "No merge of dissimilar projects", "Duplicates by content"]
+  },
+  "projects": {
+    "TAXI24_GLOBAL": {
+      "id": "TAXI24_GLOBAL",
+      "name": "TAXI24 GLOBAL",
+      "status": "ACTIVE_DEVELOPMENT",
+      "confidence": "HIGH",
+      "provenance": ["Grok deep session Oct 10-12 2026", "Financial model Excel 2026-10-11"],
+      "mission": "Alternativa tecnológica competitiva para taxis regulados, conductores, pasajeros y empresas a escala internacional.",
+      "pilot_hq": "Medellín, Colombia (Casa Matriz)",
+      "financial_highlights": {
+        "investment": 800000,
+        "year3_revenue": 13644384,
+        "year3_ebitda": 9354761.5,
+        "year5_cash": 69949316.91,
+        "take_rate_net": 0.18,
+        "contribution_margin_per_trip": 0.82,
+        "driver_cac": 45
+      },
+      "organization": "Casa Matriz (CEO + Country Manager + 5 Heads) + City Manager Medellín team (6-9 personas) + Analista de Performance",
+      "key_artifacts": ["TAXI24_Tablero_Semanal_Performance_Medellin.xlsx", "TAXI24_GLOBAL_Modelo_Financiero_*.xlsx"],
+      "next_actions": ["Constitución SAS Colombia", "Contacto cooperativas (Coopebombas, Tax Individual, Asemptaxis)", "MVP técnico", "Integración Nequi/Daviplata"]
+    },
+    "MN24_METAVERSE": {
+      "id": "MN24_METAVERSE",
+      "name": "MN24 Metaverse",
+      "status": "ARCHITECTURE_COMPLETE_PROPOSED",
+      "confidence": "HIGH",
+      "provenance": "Full architecture document (sections 1-14) + index.html Phases 6-7 + Acceptance Criteria",
+      "organization": "MN24 Labs",
+      "platforms": ["Web", "Android", "PC", "VR", "AR", "XR", "Spatial"],
+      "objective": "Plataforma comercial internacional de mundos digitales, experiencias inmersivas, servicios de IA y espacios virtuales compartidos.",
+      "mission": "Democratizar la creación de mundos virtuales y experiencias inmersivas con herramientas accesibles, IA, infraestructura escalable y tecnología modular.",
+      "ecosystem_units": ["MN24 Labs", "MN24 AI Product Builder", "Android24Creator", "HOLOOS", "MN24 Metaverse", "MN24 Cloud", "MN24 Data", "MN24 Games", "MN24 Media", "MN24 Business", "MN24 Cyber (new reference)"],
+      "architecture_layers": {
+        "1_Devices": "Android, mobile browsers, desktop, VR/AR/MR headsets, smart glasses, motion capture, authorized IoT, holographic displays",
+        "2_Immersive_Interfaces": "Responsive web, interactive 3D, avatars, multi-input, voice, WebXR, spatial interfaces, accessibility",
+        "3_3D_World_Engine": {
+          "primary": "Three.js (web first)",
+          "candidates": ["WebGL/WebGPU", "WebXR", "Godot/Unity/Unreal (native eval)", "glTF/GLB"],
+          "responsibilities": ["Scene load/render", "Objects/materials/lighting/animations", "Cameras", "Portals", "Physics", "LOD/progressive loading", "Multiplayer sync", "Scene persistence"]
+        },
+        "4_AI": ["AI World Builder", "AI Avatar Assistant", "AI Scene Designer", "AI NPC", "AI Voice", "AI Translation", "AI Story Generator", "AI Code Assistant", "AI Asset Assistant", "AI Tutor", "AI Business Assistant"],
+        "5_Backend": {"tech": "Python 3.12 + FastAPI", "scope": ["Users", "World catalog", "Projects", "Assets", "Permissions", "Sessions", "API", "Metadata", "Tasks", "Integrations", "Audit", "Quotas"]},
+        "6_Data_Storage": ["PostgreSQL", "PostGIS", "Redis", "S3-compatible", "CDN", "Backups", "Semantic search (optional)"],
+        "7_Infrastructure": ["Docker", "CI/CD", "Monitoring", "Logging", "Secrets", "Load balancing", "Regional distribution", "DR", "Cost control", "Security/privacy"]
+      },
+      "worlds": {
+        "types": 15,
+        "list": ["Social", "Virtual cities", "Universities", "Enterprise", "Meeting rooms", "Malls", "Museums", "Tourism", "Training", "Scientific labs", "Industrial simulators", "Games", "Creative", "Digital twins", "Community"]
+      },
+      "avatars": ["Profile", "Appearance", "Animations", "Emotes", "Spatial audio", "Accessibility", "Privacy", "Contacts", "Block/report", "Permissions", "Inventory", "Export"],
+      "multiplayer": {"principle": "Server authority", "tech": ["WebSockets", "WebRTC", "Redis"]},
+      "xr": {"VR": true, "AR": true, "MR": true, "XR": "Common design layer"},
+      "holographic": {
+        "A_Digital": "Floating 3D, spatial UI, 3D avatars, data viz",
+        "B_Spatial": "Compatible glasses, anchors, hand/head tracking",
+        "C_Hardware": "Volumetric displays, optical tests, volumetric capture research",
+        "distinction": "Screen 3D ≠ real optical hologram"
+      },
+      "holomemory": {
+        "classification": ["ORIGINAL", "RECONSTRUCTED", "AI-GENERATED", "AI-INFERRED", "UNKNOWN"],
+        "principle": "AI must never present reconstructions as authentic unrecorded events"
+      },
+      "security_privacy": [
+        "Secure authentication", "Role-based authorization", "HTTPS production", "Secrets outside code", "Input validation", "Abuse protection", "Rate limits/quotas", "Protected backups", "Security event logging", "Dependency updates", "Vulnerability scanning", "Access control", "Moderation/reporting", "Data deletion/export", "Consent for camera/mic/sensors", "Public/private/admin data separation", "No plaintext passwords or public API keys"
+      ],
+      "business_model_candidates": [
+        "Creator subscriptions", "Enterprise virtual spaces", "World creation services", "Professional AI tools", "Licensed 3D asset sales", "Templates/experiences", "Immersive training", "Hosting services", "Enterprise analytics", "Commercial licenses", "Integrations/consulting", "Managed services"
+      ],
+      "repository_structure": {
+        "name": "mn24-metaverse",
+        "top_level": ["README.md", "LICENSE", ".gitignore", ".env.example", "docker-compose.yml", "requirements.txt", "backend/", "frontend/", "worlds/", "infrastructure/", "docs/", "scripts/"]
+      },
+      "development_plan": {
+        "phase_1_mvp_web": ["Landing", "Basic world catalog", "Demo 3D scene", "Keyboard/touch navigation", "FastAPI", "Basic world registry", "Automated tests", "Local run (Termux/Linux)"],
+        "phase_2_persistence": ["PostgreSQL", "Schema migrations", "Users/roles", "Config save", "Asset management", "Data export", "Backups"],
+        "phase_3_social": ["Initial avatars", "Shared rooms", "Chat", "Presence", "Moderation", "Basic sync"],
+        "phase_4_ai": ["Creation assistant", "Spec generation", "Semantic search", "Model provider integration", "Generation tools"]
+      },
+      "phases_6_7": {
+        "phase_6": ["Containers", "CI/CD", "CDN", "Object storage", "Monitoring", "Horizontal scaling", "Failover", "Backups", "Secrets management"],
+        "phase_7": ["Creator accounts", "Private/public spaces", "Subscriptions", "Asset catalog", "Enterprise tools", "Commercial integrations", "International expansion", "Creator settlements", "Analytics", "Marketplace"]
+      },
+      "acceptance_criteria_mvp": [
+        "FastAPI starts", "Health endpoint OK", "Mobile browser opens", "World catalog queryable", "Account + auth", "Enter demo world", "Basic navigation", "Assets load on 4G", "Basic events logged", "Avatar flow", "Two-device tests", "Repeatable deploy", "Visible error logs", "Basic security (HTTPS, protected routes, validation)"
+      ]
+    },
+    "MN24_GAMES": {
+      "status": "BUILDS_PRESENT",
+      "confidence": "MEDIUM-HIGH",
+      "titles": ["RunicArena v1.0", "SkyBolt v1.0", "Console GAMEPAD v1.2", "PHANTASM_MN24 v1.0"],
+      "note": "Multiple binary copies inventoried. Source not extracted."
+    },
+    "MN24_LABS": {
+      "status": "STRUCTURE_INITIATED + PACKAGES_PRESENT",
+      "confidence": "MEDIUM-HIGH",
+      "role": "Main studio for software, games, AI and digital products",
+      "units_referenced": ["MN24 Games", "MN24 Cyber (authorized cybersecurity)", "MN24 Cloud", "MN24 Data", "MN24 Media", "MN24 Business"],
+      "principles": ["Modularity & reuse", "Privacy & security by design", "Verifiable integrations", "Documented code + tests", "Controlled costs"],
+      "packages": ["MN24-Labs-Workspace-MVP.zip", "MN24_Remote_Work_v0.1"],
+      "initial_repo_actions_noted": ["README.md", ".gitignore", "git init", "Initial commit"]
+    },
+    "MN24_AI_PRODUCT_BUILDER": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "Android24Creator": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "HOLOOS": {"status": "REFERENCED", "confidence": "LOW", "note": "Spatial / holographic / immersive R&D line"},
+    "HoloMemory": {"status": "FULLY_DESCRIBED_MODULE", "confidence": "HIGH", "parent": "MN24_METAVERSE"},
+    "FOOD24": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "MN24_SpaceNet": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "MN24_News_Hub": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "Memory_Deduplication_System": {"status": "PENDING_IMPORT", "confidence": "NONE"},
+    "MN24_Cyber": {"status": "REFERENCED_IN_LABS", "confidence": "LOW", "note": "Authorized cybersecurity unit mentioned in Labs structure"}
+  },
+  "missing": [
+    "Historical ChatGPT / Claude Code / Linux repo exports",
+    "Source code of game APKs and Labs packages",
+    "Deep specs for FOOD24, SpaceNet, News Hub, Android24Creator, AI Product Builder"
+  ],
+  "conflicts": [],
+  "migration_status": "PARTIAL — Maximum current depth achieved on TAXI24 and MN24 Metaverse. Not declared finished."
+}
